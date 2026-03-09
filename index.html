@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣泡排序動畫</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #array-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 300px;
+            margin: 20px 0;
+        }
+        .bar {
+            width: 30px;
+            margin: 0 2px;
+            background-color: #3498db;
+            transition: height 0.3s;
+        }
+        .comparing {
+            background-color: #e74c3c;
+        }
+        .swapping {
+            background-color: #f39c12;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>氣泡排序動畫</h1>
+    <div>
+        <label for="size">資料數量 (5-20):</label>
+        <input type="number" id="size" min="5" max="20" value="7">
+        <label for="speed">動畫速度 (ms):</label>
+        <input type="number" id="speed" min="100" max="2000" value="500">
+        <button id="generate-btn">生成新陣列</button>
+        <button id="start-btn">開始排序</button>
+    </div>
+    <div id="array-container"></div>
+    <p id="status">請先生成陣列，然後開始排序</p>
+
+    <script>
+        let array = [];
+        const container = document.getElementById('array-container');
+        const startBtn = document.getElementById('start-btn');
+        const generateBtn = document.getElementById('generate-btn');
+        const status = document.getElementById('status');
+        let bars = [];
+
+        function generateArray() {
+            const size = parseInt(document.getElementById('size').value);
+            array = [];
+            for (let i = 0; i < size; i++) {
+                array.push(Math.floor(Math.random() * 100) + 1);
+            }
+        }
+
+        function createBars() {
+            container.innerHTML = '';
+            bars = [];
+            array.forEach(value => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${value * 3}px`;
+                bar.textContent = value;
+                container.appendChild(bar);
+                bars.push(bar);
+            });
+        }
+
+        async function bubbleSort() {
+            if (array.length === 0) {
+                status.textContent = '請先生成陣列';
+                return;
+            }
+            startBtn.disabled = true;
+            generateBtn.disabled = true;
+            status.textContent = '排序中...';
+            const delay = parseInt(document.getElementById('speed').value);
+            const n = array.length;
+            for (let i = 0; i < n - 1; i++) {
+                for (let j = 0; j < n - i - 1; j++) {
+                    // 標記比較中的元素
+                    bars[j].classList.add('comparing');
+                    bars[j + 1].classList.add('comparing');
+                    await sleep(delay);
+
+                    if (array[j] > array[j + 1]) {
+                        // 交換
+                        bars[j].classList.add('swapping');
+                        bars[j + 1].classList.add('swapping');
+                        await sleep(delay);
+
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                        updateBars();
+                        await sleep(delay);
+
+                        bars[j].classList.remove('swapping');
+                        bars[j + 1].classList.remove('swapping');
+                    }
+
+                    bars[j].classList.remove('comparing');
+                    bars[j + 1].classList.remove('comparing');
+                }
+            }
+            status.textContent = '排序完成！';
+            startBtn.disabled = false;
+            generateBtn.disabled = false;
+        }
+
+        function updateBars() {
+            bars.forEach((bar, index) => {
+                bar.style.height = `${array[index] * 3}px`;
+                bar.textContent = array[index];
+            });
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        generateBtn.addEventListener('click', () => {
+            generateArray();
+            createBars();
+            status.textContent = '陣列已生成，點擊開始排序';
+        });
+
+        startBtn.addEventListener('click', () => {
+            bubbleSort();
+        });
+
+        // 初始化
+        generateArray();
+        createBars();
+    </script>
+</body>
+</html>
